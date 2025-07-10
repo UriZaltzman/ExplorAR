@@ -1,8 +1,7 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { User } = require('../models');
-const { sendVerificationCode } = require('../utils/sendVerificationCode');
-
+const {sendVerificationEmail} = require("../utils/sendVerificationCode");
 const register = async (req, res) => {
   const { firstName, lastName, email, password, dni } = req.body;
 

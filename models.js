@@ -1,12 +1,13 @@
 const sequelize = require('./db');
 
-const User = require('./models/user.model');
 const Activity = require('./models/activity.model');
 const Category = require('./models/category.model');
 const DateActivity = require('./models/dateActivity.model');
 const PhotoActivity = require('./models/photoActivity.model');
 const Review = require('./models/review.model');
 const Favorite = require('./models/favorite.model');
+const User = require('./models/user.model');
+
 
 // Relaciones
 Category.hasMany(Activity);
