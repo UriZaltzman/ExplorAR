@@ -1,10 +1,13 @@
-const express = import('express');
-const cors = import('cors');
-const routes = import('./routes');
-const { sequelize } = import('./models');
-import('dotenv').config();
+import express from 'express';
+import cors from 'cors';
+import routes from './routes.js';
+import { sequelize } from './models/index.js';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const app = express();
+
 app.use(cors());
 app.use(express.json());
 
@@ -15,4 +18,8 @@ sequelize.sync().then(() => {
   app.listen(process.env.PORT || 3000, () => {
     console.log(`Server running on http://localhost:${process.env.PORT || 3000}`);
   });
+}).catch((error) => {
+  console.error('Failed to sync database:', error);
 });
+
+export default app;

@@ -31,5 +31,6 @@
   "bugs": {
     "url": "https://github.com/UriZaltzman/ExplorAR/issues"
   },
-  "homepage": "https://github.com/UriZaltzman/ExplorAR#readme"
+  "homepage": "https://github.com/UriZaltzman/ExplorAR#readme",
+  "type": "module"
 }

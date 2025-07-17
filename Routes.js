@@ -1,10 +1,10 @@
-const express = import('express');
-const router = express.Router();
+import express from 'express';
+import activityRoutes from './routes/activity.routes.js';
+import authRoutes from './routes/auth.routes.js';
 
-const activityRoutes = import('./routes/activity.routes');
-const authRoutes = import('./routes/auth.routes');
+const router = express.Router();
 
 router.use('/activities', activityRoutes);
 router.use('/auth', authRoutes);
 
-module.exports = router;
+export default router;

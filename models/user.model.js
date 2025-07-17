@@ -1,13 +1,31 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../db');
+import { DataTypes } from 'sequelize';
 
-const User = sequelize.define('User', {
-  name: DataTypes.STRING,
-  lastName: DataTypes.STRING,
-  email: { type: DataTypes.STRING, unique: true, allowNull: false },
-  password: DataTypes.STRING,
-  dni: { type: DataTypes.STRING(8), allowNull: false },
-  role: { type: DataTypes.ENUM('user', 'admin'), defaultValue: 'user' }
-});
-
-module.exports = User;
+export default (sequelize) => {
+  return sequelize.define('User', {
+    id: {
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      autoIncrement: true,
+    },
+    nombre: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    apellido: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    email: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      unique: true,
+    },
+    password: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+  }, {
+    timestamps: true,
+    tableName: 'usuarios',
+  });
+};

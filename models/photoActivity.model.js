@@ -1,8 +1,7 @@
-const { DataTypes } = import('sequelize');
-const sequelize = import('../db');
+import { DataTypes } from 'sequelize';
 
-const PhotoActivity = sequelize.define('PhotoActivity', {
-  url: { type: DataTypes.TEXT, allowNull: false }
-});
-
-module.exports = PhotoActivity;
+export default (sequelize) => {
+  return sequelize.define('PhotoActivity', {
+    url: { type: DataTypes.TEXT, allowNull: false }
+  });
+};

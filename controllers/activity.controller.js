@@ -1,5 +1,5 @@
-const { Activity, Category, PhotoActivity, DateActivity } = import('../models');
-const { Op } = import('sequelize');
+import { Activity, Category, PhotoActivity, DateActivity } from '../models.js';
+import { Op } from 'sequelize';
 
 // Listado + filtros
 const getAllActivities = async (req, res) => {
@@ -41,7 +41,7 @@ const getActivityById = async (req, res) => {
   }
 };
 
-module.exports = {
+export {
   getAllActivities,
   getActivityById
 };

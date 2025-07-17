@@ -1,6 +1,5 @@
-const { DataTypes } = import('sequelize');
-const sequelize = import('../db');
+import { DataTypes } from 'sequelize';
 
-const Favorite = sequelize.define('Favorite', {}, { timestamps: false });
-
-module.exports = Favorite;
+export default (sequelize) => {
+  return sequelize.define('Favorite', {}, { timestamps: false });
+};

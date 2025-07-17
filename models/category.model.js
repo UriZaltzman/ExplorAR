@@ -1,8 +1,7 @@
-const { DataTypes } = import('sequelize');
-const sequelize = import('../db');
+import { DataTypes } from 'sequelize';
 
-const Category = sequelize.define('Category', {
-  name: { type: DataTypes.STRING, allowNull: false }
-});
-
-module.exports = Category;
+export default (sequelize) => {
+  return sequelize.define('Category', {
+    name: { type: DataTypes.STRING, allowNull: false }
+  });
+};

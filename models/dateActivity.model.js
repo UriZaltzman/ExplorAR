@@ -1,9 +1,8 @@
-const { DataTypes } = import('sequelize');
-const sequelize = import('../db');
+import { DataTypes } from 'sequelize';
 
-const DateActivity = sequelize.define('DateActivity', {
-  date: { type: DataTypes.DATEONLY },
-  startTime: { type: DataTypes.TIME }
-});
-
-module.exports = DateActivity;
+export default (sequelize) => {
+  return sequelize.define('DateActivity', {
+    date: { type: DataTypes.DATEONLY },
+    startTime: { type: DataTypes.TIME }
+  });
+};

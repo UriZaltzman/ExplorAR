@@ -1,12 +1,8 @@
-const express = require('express');
+import express from 'express';
+import { registerUser, loginUser, forgotPassword, resetPassword, googleLogin } from '../controllers/auth.controller.js';
+
 const router = express.Router();
-const { 
-  registerUser, 
-  loginUser, 
-  forgotPassword, 
-  resetPassword, 
-  googleLogin 
-} = require('../controllers/auth.controller');
+
 // Registro normal
 router.post('/register', registerUser);
 // Login normal
@@ -17,4 +13,5 @@ router.post('/google-login', googleLogin);
 router.post('/forgot-password', forgotPassword);
 // Resetear contraseña (update de la contraseña con el token enviado al email)
 router.post('/reset-password', resetPassword);
-module.exports = router;
+
+export default router;

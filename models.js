@@ -1,12 +1,19 @@
-const sequelize = require('./db');
+import sequelize from './db.js';
+import UserModel from './models/user.model.js';
+import ActivityModel from './models/activity.model.js';
+import CategoryModel from './models/category.model.js';
+import DateActivityModel from './models/dateActivity.model.js';
+import PhotoActivityModel from './models/photoActivity.model.js';
+import ReviewModel from './models/review.model.js';
+import FavoriteModel from './models/favorite.model.js';
 
-const User = require('./models/user.model');
-const Activity = require('./models/activity.model');
-const Category = require('./models/category.model');
-const DateActivity = require('./models/dateActivity.model');
-const PhotoActivity = require('./models/photoActivity.model');
-const Review = require('./models/review.model');
-const Favorite = require('./models/favorite.model');
+const User = UserModel(sequelize);
+const Activity = ActivityModel(sequelize);
+const Category = CategoryModel(sequelize);
+const DateActivity = DateActivityModel(sequelize);
+const PhotoActivity = PhotoActivityModel(sequelize);
+const Review = ReviewModel(sequelize);
+const Favorite = FavoriteModel(sequelize);
 
 // Relaciones
 Category.hasMany(Activity);
@@ -27,7 +34,7 @@ Favorite.belongsTo(User);
 Activity.hasMany(Favorite);
 Favorite.belongsTo(Activity);
 
-module.exports = {
+export {
   sequelize,
   User,
   Activity,
