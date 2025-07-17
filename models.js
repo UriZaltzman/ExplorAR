@@ -1,12 +1,12 @@
-const sequelize = require('./db');
+const sequelize = import('./db');
 
-const User = require('./models/user.model');
-const Activity = require('./models/activity.model');
-const Category = require('./models/category.model');
-const DateActivity = require('./models/dateActivity.model');
-const PhotoActivity = require('./models/photoActivity.model');
-const Review = require('./models/review.model');
-const Favorite = require('./models/favorite.model');
+const User = import('./models/user.model');
+const Activity = import('./models/activity.model');
+const Category = import('./models/category.model');
+const DateActivity = import('./models/dateActivity.model');
+const PhotoActivity = import('./models/photoActivity.model');
+const Review = import('./models/review.model');
+const Favorite = import('./models/favorite.model');
 
 // Relaciones
 Category.hasMany(Activity);

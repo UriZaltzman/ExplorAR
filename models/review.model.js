@@ -1,5 +1,5 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../db');
+const { DataTypes } = import('sequelize');
+const sequelize = import('../db');
 
 const Review = sequelize.define('Review', {
   comment: DataTypes.TEXT,

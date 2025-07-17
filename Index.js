@@ -1,8 +1,8 @@
-const express = require('express');
-const cors = require('cors');
-const routes = require('./routes');
-const { sequelize } = require('./models');
-require('dotenv').config();
+const express = import('express');
+const cors = import('cors');
+const routes = import('./routes');
+const { sequelize } = import('./models');
+import('dotenv').config();
 
 const app = express();
 app.use(cors());

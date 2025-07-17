@@ -1,5 +1,5 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../db');
+const { DataTypes } = import('sequelize');
+const sequelize = import('../db');
 
 const Favorite = sequelize.define('Favorite', {}, { timestamps: false });
 

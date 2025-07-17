@@ -1,5 +1,5 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../db');
+const { DataTypes } = import('sequelize');
+const sequelize = import('../db');
 
 const DateActivity = sequelize.define('DateActivity', {
   date: { type: DataTypes.DATEONLY },
