@@ -1,5 +1,5 @@
-const { DataTypes } = import('sequelize');
-const sequelize = import('../db');
+const { DataTypes } = require('sequelize');
+const sequelize = require('../db');
 
 const User = sequelize.define('User', {
   name: DataTypes.STRING,

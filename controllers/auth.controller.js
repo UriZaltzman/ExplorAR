@@ -1,7 +1,7 @@
-const bcrypt = import('bcryptjs');
-const jwt = import('jsonwebtoken');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 // Asumimos que tenés un modelo User
-const { User } = import('../models');
+const { User } = require('../models');
 
 // Registro de usuario normal
 const registerUser = async (req, res) => {

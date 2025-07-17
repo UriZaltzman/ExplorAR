@@ -1,6 +1,6 @@
-const jwt = import('jsonwebtoken');
+const jwt = require('jsonwebtoken');
 
-const authMiddleware = (importAdmin = false) => {
+const authMiddleware = (requireAdmin = false) => {
   return (req, res, next) => {
     const authHeader = req.headers.authorization;
 
@@ -14,7 +14,7 @@ const authMiddleware = (importAdmin = false) => {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       req.user = decoded;
 
-      if (importAdmin && req.user.role !== 'admin') {
+      if (requireAdmin && req.user.role !== 'admin') {
         return res.status(403).json({ message: 'Acceso denegado: solo administradores' });
       }
 

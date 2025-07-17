@@ -1,4 +1,4 @@
-const express = import('express');
+const express = require('express');
 const router = express.Router();
 const { 
   registerUser, 
@@ -6,7 +6,7 @@ const {
   forgotPassword, 
   resetPassword, 
   googleLogin 
-} = import('../controllers/auth.controller');
+} = require('../controllers/auth.controller');
 // Registro normal
 router.post('/register', registerUser);
 // Login normal

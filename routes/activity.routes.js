@@ -5,4 +5,9 @@ const { getAllActivities, getActivityById } = require('../controllers/activity.c
 router.get('/', getAllActivities);
 router.get('/:id', getActivityById);
 
+
+
+
+
+
 module.exports = router;
