@@ -24,6 +24,16 @@ export default (sequelize) => {
       type: DataTypes.STRING,
       allowNull: false,
     },
+    dni: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      unique: true,
+    },
+    role: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      defaultValue: 'user',
+    },
   }, {
     timestamps: true,
     tableName: 'usuarios',
