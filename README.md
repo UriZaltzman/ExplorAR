@@ -143,6 +143,20 @@ Content-Type: application/json
 }
 ```
 
+### Login con Google
+```http
+POST /api/auth/google-login
+Content-Type: application/json
+
+{
+  "idToken": "google_id_token_from_frontend"
+}
+```
+
+**Nota:** Requiere configuración de Google OAuth en el frontend y las siguientes variables de entorno:
+- `GOOGLE_CLIENT_ID`: Tu Google Client ID
+- `GOOGLE_CLIENT_SECRET`: Tu Google Client Secret
+
 ## Actividades Turísticas
 
 ### Obtener Todas las Actividades (con filtros)

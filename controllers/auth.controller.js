@@ -1,5 +1,6 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import { OAuth2Client } from 'google-auth-library';
 import { User, VerificacionEmail } from '../models/index.js';
 import { sendVerificationEmail } from '../utils/sendVerificationCode.js';
 import { Op } from 'sequelize';
@@ -381,13 +382,91 @@ export const updateUserProfile = async (req, res) => {
   }
 };
 
-// Login con Google (placeholder para futura implementación)
+// Login con Google
 export const googleLogin = async (req, res) => {
   try {
-    // TODO: Implementar autenticación con Google
-    res.status(501).json({ message: 'Login con Google no implementado aún' });
+    const { idToken } = req.body;
+
+    if (!idToken) {
+      return res.status(400).json({ message: 'Token de Google es requerido' });
+    }
+
+    // Verificar el token con Google
+    const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+    
+    const ticket = await client.verifyIdToken({
+      idToken,
+      audience: process.env.GOOGLE_CLIENT_ID
+    });
+
+    const payload = ticket.getPayload();
+    const { email, name, picture, sub: googleId } = payload;
+
+    // Buscar usuario existente por email o google_id
+    let user = await User.findOne({
+      where: {
+        [Op.or]: [{ email }, { google_id: googleId }]
+      }
+    });
+
+    if (!user) {
+      // Crear nuevo usuario
+      const [nombre, apellido] = name.split(' ');
+      
+      user = await User.create({
+        nombre: nombre || name,
+        apellido: apellido || '',
+        email,
+        google_id: googleId,
+        profile_image_url: picture,
+        role: 'user',
+        is_email_verified: true, // Google ya verifica el email
+        dni: `G${googleId.slice(-8)}` // DNI temporal basado en Google ID
+      });
+    } else {
+      // Actualizar información de Google si es necesario
+      if (!user.google_id) {
+        await user.update({
+          google_id: googleId,
+          profile_image_url: picture,
+          is_email_verified: true
+        });
+      }
+    }
+
+    // Generar JWT token
+    const token = jwt.sign(
+      {
+        userId: user.id,
+        email: user.email,
+        role: user.role,
+        nombre: user.nombre,
+        apellido: user.apellido
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: '24h' }
+    );
+
+    res.json({
+      message: 'Login con Google exitoso',
+      token,
+      user: {
+        id: user.id,
+        nombre: user.nombre,
+        apellido: user.apellido,
+        email: user.email,
+        role: user.role,
+        profile_image_url: user.profile_image_url
+      }
+    });
+
   } catch (error) {
     console.error('Error in googleLogin:', error);
+    
+    if (error.message.includes('Invalid token')) {
+      return res.status(401).json({ message: 'Token de Google inválido' });
+    }
+    
     res.status(500).json({ message: 'Error en login con Google', error: error.message });
   }
 };
