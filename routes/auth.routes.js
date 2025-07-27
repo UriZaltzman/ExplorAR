@@ -1,17 +1,32 @@
 import express from 'express';
-import { registerUser, loginUser, forgotPassword, resetPassword, googleLogin } from '../controllers/auth.controller.js';
+import {
+  registerUser,
+  loginUser,
+  verifyEmail,
+  verifyEmailDev,
+  resendVerificationCode,
+  forgotPassword,
+  resetPassword,
+  getUserProfile,
+  updateUserProfile,
+  googleLogin
+} from '../controllers/auth.controller.js';
+import { authenticateToken } from '../middlewares/auth.middleware.js';
 
 const router = express.Router();
 
-// Registro normal
+// Rutas públicas
 router.post('/register', registerUser);
-// Login normal
 router.post('/login', loginUser);
-// Login con Google
-router.post('/google-login', googleLogin);
-// Recuperar contraseña
+router.post('/verify-email', verifyEmail);
+router.post('/verify-email-dev', verifyEmailDev); // Solo para desarrollo
+router.post('/resend-verification', resendVerificationCode);
 router.post('/forgot-password', forgotPassword);
-// Resetear contraseña (update de la contraseña con el token enviado al email)
 router.post('/reset-password', resetPassword);
+router.post('/google-login', googleLogin);
+
+// Rutas protegidas
+router.get('/profile', authenticateToken, getUserProfile);
+router.put('/profile', authenticateToken, updateUserProfile);
 
 export default router;

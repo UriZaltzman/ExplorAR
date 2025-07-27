@@ -34,8 +34,28 @@ export default (sequelize) => {
       allowNull: false,
       defaultValue: 'user',
     },
+    is_email_verified: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
+    google_id: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    profile_image_url: {
+      type: DataTypes.STRING(500),
+      allowNull: true,
+    },
+    created_at: {
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW,
+    },
+    updated_at: {
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW,
+    },
   }, {
-    timestamps: true,
+    timestamps: false,
     tableName: 'usuarios',
   });
 };

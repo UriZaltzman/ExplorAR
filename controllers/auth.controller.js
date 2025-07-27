@@ -1,148 +1,393 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { User } from '../models.js';
+import { User, VerificacionEmail } from '../models/index.js';
+import { sendVerificationEmail } from '../utils/sendVerificationCode.js';
+import { Op } from 'sequelize';
 
-// Registro de usuario normal
-const registerUser = async (req, res) => {
-  const { nombre, apellido, email, password, dni } = req.body;
-
-  if (!nombre || !apellido || !email || !password || !dni) {
-    return res.status(400).json({ message: 'Todos los campos son obligatorios' });
-  }
-
+// Registro de usuario
+export const registerUser = async (req, res) => {
   try {
-    const existingUser = await User.findOne({ where: { email } });
-    if (existingUser) {
-      return res.status(409).json({ message: 'El email ya está registrado' });
+    const { nombre, apellido, email, password, dni } = req.body;
+
+    // Validaciones
+    if (!nombre || !apellido || !email || !password || !dni) {
+      return res.status(400).json({ message: 'Todos los campos son obligatorios' });
     }
 
+    // Validar formato de email
+    const emailRegex = /^[^\s@]+@gmail\.com$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ message: 'El email debe ser de Gmail (@gmail.com)' });
+    }
+
+    // Validar DNI (8 caracteres)
+    if (dni.length !== 8) {
+      return res.status(400).json({ message: 'El DNI debe tener exactamente 8 caracteres' });
+    }
+
+    // Verificar si el usuario ya existe
+    const existingUser = await User.findOne({
+      where: {
+        [Op.or]: [{ email }, { dni }]
+      }
+    });
+
+    if (existingUser) {
+      return res.status(400).json({ message: 'El email o DNI ya están registrados' });
+    }
+
+    // Encriptar contraseña
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // Crear usuario
     const newUser = await User.create({
       nombre,
       apellido,
       email,
       password: hashedPassword,
       dni,
-      role: 'user'
+      role: 'user',
+      is_email_verified: false
     });
 
-    res.status(201).json({ message: 'Usuario registrado', userId: newUser.id });
+    // Generar código de verificación
+    const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const expirationDate = new Date();
+    expirationDate.setHours(expirationDate.getHours() + 24); // 24 horas
+
+    await VerificacionEmail.create({
+      user_id: newUser.id,
+      codigo: verificationCode,
+      fecha_expiracion: expirationDate
+    });
+
+    // Enviar email de verificación
+    try {
+      await sendVerificationEmail(email, verificationCode);
+    } catch (emailError) {
+      console.error('Error sending verification email:', emailError);
+      // No fallar el registro si el email falla
+    }
+
+    res.status(201).json({
+      message: 'Usuario registrado exitosamente. Revisa tu email para verificar tu cuenta.',
+      userId: newUser.id
+    });
   } catch (error) {
-    res.status(500).json({ message: 'Error en el registro', error });
+    console.error('Error in registerUser:', error);
+    res.status(500).json({ message: 'Error en el registro', error: error.message });
   }
 };
 
-// Login normal
-const loginUser = async (req, res) => {
-  const { email, password } = req.body;
-
+// Login de usuario
+export const loginUser = async (req, res) => {
   try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ message: 'Email y contraseña son obligatorios' });
+    }
+
+    // Buscar usuario
     const user = await User.findOne({ where: { email } });
-
     if (!user) {
       return res.status(401).json({ message: 'Credenciales inválidas' });
     }
 
-    const isMatch = await bcrypt.compare(password, user.password);
-
-    if (!isMatch) {
+    // Verificar contraseña
+    const isValidPassword = await bcrypt.compare(password, user.password);
+    if (!isValidPassword) {
       return res.status(401).json({ message: 'Credenciales inválidas' });
     }
 
-    const token = jwt.sign(
-      { id: user.id, role: user.role },
-      process.env.JWT_SECRET,
-      { expiresIn: '1h' }
-    );
-
-    res.json({ token });
-  } catch (error) {
-    res.status(500).json({ message: 'Error al iniciar sesión', error });
-  }
-};
-
-// Login con Google (mock de ejemplo)
-const googleLogin = async (req, res) => {
-  const { email, nombre, apellido } = req.body;
-
-  try {
-    let user = await User.findOne({ where: { email } });
-
-    if (!user) {
-      user = await User.create({
-        nombre,
-        apellido,
-        email,
-        password: null, // no necesita password
-        dni: null,
-        role: 'user'
+    // Verificar si el email está verificado
+    if (!user.is_email_verified) {
+      return res.status(401).json({ 
+        message: 'Debes verificar tu email antes de iniciar sesión',
+        needsVerification: true,
+        userId: user.id
       });
     }
 
+    // Generar token JWT
     const token = jwt.sign(
-      { id: user.id, role: user.role },
-      process.env.JWT_SECRET,
-      { expiresIn: '1h' }
+      { 
+        userId: user.id, 
+        email: user.email, 
+        role: user.role 
+      },
+      process.env.JWT_SECRET || 'your-secret-key',
+      { expiresIn: '24h' }
     );
 
-    res.json({ token });
+    res.json({
+      message: 'Login exitoso',
+      token,
+      user: {
+        id: user.id,
+        nombre: user.nombre,
+        apellido: user.apellido,
+        email: user.email,
+        role: user.role
+      }
+    });
   } catch (error) {
-    res.status(500).json({ message: 'Error en login con Google', error });
+    console.error('Error in loginUser:', error);
+    res.status(500).json({ message: 'Error en el login', error: error.message });
   }
 };
 
-// Olvidé mi contraseña (enviar email con token simulación)
-const forgotPassword = async (req, res) => {
-  const { email } = req.body;
-
+// Verificar email
+export const verifyEmail = async (req, res) => {
   try {
-    const user = await User.findOne({ where: { email } });
+    const { userId, codigo } = req.body;
 
-    if (!user) {
-      return res.status(404).json({ message: 'Email no encontrado' });
+    if (!userId || !codigo) {
+      return res.status(400).json({ message: 'Usuario y código son obligatorios' });
     }
 
-    // simulamos un token de recuperación
-    const resetToken = jwt.sign(
-      { id: user.id },
-      process.env.JWT_SECRET,
-      { expiresIn: '15m' }
-    );
+    // Buscar verificación
+    const verification = await VerificacionEmail.findOne({
+      where: {
+        user_id: userId,
+        codigo,
+        usado: false,
+        fecha_expiracion: {
+          [Op.gt]: new Date()
+        }
+      }
+    });
 
-    // Acá deberías enviar el token por email. Por ahora lo devolvemos:
-    res.json({ message: 'Token de recuperación generado', resetToken });
+    if (!verification) {
+      return res.status(400).json({ message: 'Código inválido o expirado' });
+    }
+
+    // Marcar como usado
+    await verification.update({ usado: true });
+
+    // Verificar email del usuario
+    const user = await User.findByPk(userId);
+    if (user) {
+      await user.update({ is_email_verified: true });
+    }
+
+    res.json({ message: 'Email verificado exitosamente' });
   } catch (error) {
-    res.status(500).json({ message: 'Error al generar token', error });
+    console.error('Error in verifyEmail:', error);
+    res.status(500).json({ message: 'Error al verificar email', error: error.message });
+  }
+};
+
+// Verificar email sin código (solo para desarrollo)
+export const verifyEmailDev = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ message: 'Email es obligatorio' });
+    }
+
+    const user = await User.findOne({ where: { email } });
+    if (!user) {
+      return res.status(404).json({ message: 'Usuario no encontrado' });
+    }
+
+    // Verificar email directamente
+    await user.update({ is_email_verified: true });
+
+    res.json({ message: 'Email verificado exitosamente (modo desarrollo)' });
+  } catch (error) {
+    console.error('Error in verifyEmailDev:', error);
+    res.status(500).json({ message: 'Error al verificar email', error: error.message });
+  }
+};
+
+// Reenviar código de verificación
+export const resendVerificationCode = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ message: 'Email es obligatorio' });
+    }
+
+    const user = await User.findOne({ where: { email } });
+    if (!user) {
+      return res.status(404).json({ message: 'Usuario no encontrado' });
+    }
+
+    if (user.is_email_verified) {
+      return res.status(400).json({ message: 'El email ya está verificado' });
+    }
+
+    // Generar nuevo código
+    const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const expirationDate = new Date();
+    expirationDate.setHours(expirationDate.getHours() + 24);
+
+    // Crear nueva verificación
+    await VerificacionEmail.create({
+      user_id: user.id,
+      codigo: verificationCode,
+      fecha_expiracion: expirationDate
+    });
+
+    // Enviar email
+    try {
+      await sendVerificationEmail(email, verificationCode);
+      res.json({ message: 'Código de verificación reenviado' });
+    } catch (emailError) {
+      console.error('Error sending verification email:', emailError);
+      res.status(500).json({ message: 'Error al enviar email de verificación' });
+    }
+  } catch (error) {
+    console.error('Error in resendVerificationCode:', error);
+    res.status(500).json({ message: 'Error al reenviar código', error: error.message });
+  }
+};
+
+// Olvidé mi contraseña
+export const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ message: 'Email es obligatorio' });
+    }
+
+    const user = await User.findOne({ where: { email } });
+    if (!user) {
+      return res.status(404).json({ message: 'Usuario no encontrado' });
+    }
+
+    // Generar código de reset
+    const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const expirationDate = new Date();
+    expirationDate.setHours(expirationDate.getHours() + 1); // 1 hora
+
+    // Crear verificación de reset
+    await VerificacionEmail.create({
+      user_id: user.id,
+      codigo: resetCode,
+      fecha_expiracion: expirationDate
+    });
+
+    // Enviar email de reset
+    try {
+      await sendVerificationEmail(email, resetCode, 'reset');
+      res.json({ message: 'Email de recuperación enviado' });
+    } catch (emailError) {
+      console.error('Error sending reset email:', emailError);
+      res.status(500).json({ message: 'Error al enviar email de recuperación' });
+    }
+  } catch (error) {
+    console.error('Error in forgotPassword:', error);
+    res.status(500).json({ message: 'Error al procesar solicitud', error: error.message });
   }
 };
 
 // Resetear contraseña
-const resetPassword = async (req, res) => {
-  const { token, newPassword } = req.body;
-
+export const resetPassword = async (req, res) => {
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await User.findByPk(decoded.id);
+    const { email, codigo, newPassword } = req.body;
+
+    if (!email || !codigo || !newPassword) {
+      return res.status(400).json({ message: 'Todos los campos son obligatorios' });
+    }
+
+    const user = await User.findOne({ where: { email } });
+    if (!user) {
+      return res.status(404).json({ message: 'Usuario no encontrado' });
+    }
+
+    // Verificar código
+    const verification = await VerificacionEmail.findOne({
+      where: {
+        user_id: user.id,
+        codigo,
+        usado: false,
+        fecha_expiracion: {
+          [Op.gt]: new Date()
+        }
+      }
+    });
+
+    if (!verification) {
+      return res.status(400).json({ message: 'Código inválido o expirado' });
+    }
+
+    // Marcar como usado
+    await verification.update({ usado: true });
+
+    // Actualizar contraseña
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    await user.update({ password: hashedPassword });
+
+    res.json({ message: 'Contraseña actualizada exitosamente' });
+  } catch (error) {
+    console.error('Error in resetPassword:', error);
+    res.status(500).json({ message: 'Error al resetear contraseña', error: error.message });
+  }
+};
+
+// Obtener perfil del usuario
+export const getUserProfile = async (req, res) => {
+  try {
+    const user = await User.findByPk(req.user.userId, {
+      attributes: { exclude: ['password'] }
+    });
 
     if (!user) {
       return res.status(404).json({ message: 'Usuario no encontrado' });
     }
 
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
-    user.password = hashedPassword;
-    await user.save();
-
-    res.json({ message: 'Contraseña actualizada con éxito' });
+    res.json(user);
   } catch (error) {
-    res.status(500).json({ message: 'Token inválido o expirado', error });
+    console.error('Error in getUserProfile:', error);
+    res.status(500).json({ message: 'Error al obtener perfil', error: error.message });
   }
 };
 
-export {
-  registerUser,
-  loginUser,
-  googleLogin,
-  forgotPassword,
-  resetPassword
+// Actualizar perfil del usuario
+export const updateUserProfile = async (req, res) => {
+  try {
+    const { nombre, apellido } = req.body;
+
+    const user = await User.findByPk(req.user.userId);
+    if (!user) {
+      return res.status(404).json({ message: 'Usuario no encontrado' });
+    }
+
+    // Solo permitir actualizar nombre y apellido
+    const updateData = {};
+    if (nombre) updateData.nombre = nombre;
+    if (apellido) updateData.apellido = apellido;
+
+    await user.update(updateData);
+
+    res.json({
+      message: 'Perfil actualizado exitosamente',
+      user: {
+        id: user.id,
+        nombre: user.nombre,
+        apellido: user.apellido,
+        email: user.email,
+        role: user.role
+      }
+    });
+  } catch (error) {
+    console.error('Error in updateUserProfile:', error);
+    res.status(500).json({ message: 'Error al actualizar perfil', error: error.message });
+  }
+};
+
+// Login con Google (placeholder para futura implementación)
+export const googleLogin = async (req, res) => {
+  try {
+    // TODO: Implementar autenticación con Google
+    res.status(501).json({ message: 'Login con Google no implementado aún' });
+  } catch (error) {
+    console.error('Error in googleLogin:', error);
+    res.status(500).json({ message: 'Error en login con Google', error: error.message });
+  }
 };
