@@ -67,11 +67,11 @@ export const optionalAuth = async (req, res, next) => {
           apellido: user.apellido
         };
       }
-    }
+      }
 
-    next();
+      next();
   } catch (error) {
     // Si hay error en el token, simplemente continuar sin usuario
     next();
-  }
+    }
 };

@@ -87,7 +87,7 @@ export const getActivities = async (req, res) => {
         const resenas = await Resena.findAll({
           where: { actividadturistica_id: activity.id },
           attributes: ['rating']
-        });
+    });
 
         const ratings = resenas.map(r => parseFloat(r.rating)).filter(r => !isNaN(r));
         const averageRating = ratings.length > 0 
@@ -271,7 +271,7 @@ export const updateActivity = async (req, res) => {
     // Verificar que el usuario sea admin
     if (req.user.role !== 'admin') {
       return res.status(403).json({ message: 'Solo los administradores pueden actualizar actividades' });
-    }
+  }
 
     const activity = await ActividadTuristica.findByPk(id);
     if (!activity) {

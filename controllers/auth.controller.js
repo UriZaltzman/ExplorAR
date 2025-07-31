@@ -8,12 +8,12 @@ import { Op } from 'sequelize';
 // Registro de usuario
 export const registerUser = async (req, res) => {
   try {
-    const { nombre, apellido, email, password, dni } = req.body;
+  const { nombre, apellido, email, password, dni } = req.body;
 
     // Validaciones
-    if (!nombre || !apellido || !email || !password || !dni) {
-      return res.status(400).json({ message: 'Todos los campos son obligatorios' });
-    }
+  if (!nombre || !apellido || !email || !password || !dni) {
+    return res.status(400).json({ message: 'Todos los campos son obligatorios' });
+  }
 
     // Validar formato de email
     const emailRegex = /^[^\s@]+@gmail\.com$/;
@@ -83,7 +83,7 @@ export const registerUser = async (req, res) => {
 // Login de usuario
 export const loginUser = async (req, res) => {
   try {
-    const { email, password } = req.body;
+  const { email, password } = req.body;
 
     if (!email || !password) {
       return res.status(400).json({ message: 'Email y contraseña son obligatorios' });
@@ -206,7 +206,7 @@ export const verifyEmailDev = async (req, res) => {
 // Reenviar código de verificación
 export const resendVerificationCode = async (req, res) => {
   try {
-    const { email } = req.body;
+  const { email } = req.body;
 
     if (!email) {
       return res.status(400).json({ message: 'Email es obligatorio' });

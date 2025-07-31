@@ -62,25 +62,25 @@ El servidor estará disponible en: `http://localhost:3000`
 POST /api/auth/register
 Content-Type: application/json
 
-{
-  "nombre": "Juan",
-  "apellido": "Pérez",
+    {
+      "nombre": "Juan",
+      "apellido": "Pérez",
   "email": "juan@gmail.com",
   "password": "password123",
-  "dni": "12345678"
-}
-```
+      "dni": "12345678"
+    }
+    ```
 
 ### Login
 ```http
 POST /api/auth/login
 Content-Type: application/json
 
-{
+    {
   "email": "juan@gmail.com",
   "password": "password123"
-}
-```
+    }
+    ```
 
 ### Verificar Email
 ```http
@@ -98,7 +98,7 @@ Content-Type: application/json
 POST /api/auth/resend-verification
 Content-Type: application/json
 
-{
+    {
   "email": "juan@gmail.com"
 }
 ```
@@ -108,10 +108,10 @@ Content-Type: application/json
 POST /api/auth/forgot-password
 Content-Type: application/json
 
-{
+    {
   "email": "juan@gmail.com"
-}
-```
+    }
+    ```
 
 ### Resetear Contraseña
 ```http
@@ -137,11 +137,11 @@ PUT /api/auth/profile
 Authorization: Bearer <token>
 Content-Type: application/json
 
-{
+    {
   "nombre": "Juan Carlos",
   "apellido": "Pérez González"
-}
-```
+    }
+    ```
 
 ### Login con Google
 ```http
@@ -270,6 +270,80 @@ GET /api/favorites
 Authorization: Bearer <token>
 ```
 
+### Verificar si Actividad está en Favoritos
+```http
+GET /api/favorites/check/activity/1
+Authorization: Bearer <token>
+```
+
+### Verificar si Restaurante está en Favoritos
+```http
+GET /api/favorites/check/restaurant/1
+Authorization: Bearer <token>
+```
+
+## Reseñas
+
+### Crear Reseña para Actividad
+```http
+POST /api/reviews/activities
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "actividadturistica_id": 1,
+  "rating": 4.5,
+  "comment": "Excelente experiencia, muy recomendable"
+}
+```
+
+### Crear Reseña para Restaurante
+```http
+POST /api/reviews/restaurants
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "restaurante_id": 1,
+  "rating": 5.0,
+  "comment": "Comida deliciosa y servicio excelente"
+}
+```
+
+### Obtener Reseñas de Actividad
+```http
+GET /api/reviews/activities/1?page=1&limit=10
+```
+
+### Obtener Reseñas de Restaurante
+```http
+GET /api/reviews/restaurants/1?page=1&limit=10
+```
+
+### Actualizar Reseña
+```http
+PUT /api/reviews/1
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "rating": 5.0,
+  "comment": "Actualizado: Mejor experiencia de lo esperado"
+}
+```
+
+### Eliminar Reseña
+```http
+DELETE /api/reviews/1
+Authorization: Bearer <token>
+```
+
+### Obtener Reseñas del Usuario
+```http
+GET /api/reviews/user?page=1&limit=10
+Authorization: Bearer <token>
+```
+
 ## Endpoints de Prueba
 
 ### Probar Conexión a Base de Datos
@@ -342,23 +416,84 @@ ExplorAR/
 └── package.json
 ```
 
+## Validaciones y Reglas de Negocio
+
+### Favoritos
+- Solo usuarios autenticados pueden usar favoritos
+- Un usuario no puede agregar el mismo elemento dos veces
+- Se verifica que la actividad/restaurante existe antes de agregar
+- Solo el usuario puede eliminar sus propios favoritos
+- Paginación automática en listas de favoritos
+
+### Reseñas
+- Solo usuarios autenticados pueden crear reseñas
+- Un usuario solo puede hacer una reseña por actividad/restaurante
+- Rating debe estar entre 0.5 y 5.0
+- Solo el autor puede editar/eliminar sus reseñas
+- Reseñas públicas se pueden ver sin autenticación
+- Estadísticas automáticas (promedio, distribución de ratings)
+- Paginación automática en listas de reseñas
+
+## Estructura de Datos
+
+### Tabla FavoritoActividad
+```sql
+- id (PK)
+- user_id (FK -> usuarios)
+- actividadturistica_id (FK -> ActividadesTuristicas)
+- created_at
+```
+
+### Tabla FavoritoRestaurante
+```sql
+- id (PK)
+- user_id (FK -> usuarios)
+- restaurante_id (FK -> Restaurantes)
+- created_at
+```
+
+### Tabla Resena
+```sql
+- id (PK)
+- user_id (FK -> usuarios)
+- actividadturistica_id (FK -> ActividadesTuristicas, nullable)
+- restaurante_id (FK -> Restaurantes, nullable)
+- rating (DECIMAL(2,1), 0.5-5.0)
+- comment (TEXT, nullable)
+- created_at
+- updated_at
+```
+
+## Códigos de Error
+
+### Favoritos
+- `400` - "ID de actividad es obligatorio"
+- `404` - "Actividad no encontrada"
+- `400` - "La actividad ya está en tus favoritos"
+- `404` - "Actividad no encontrada en favoritos"
+
+### Reseñas
+- `400` - "ID de actividad y calificación son obligatorios"
+- `400` - "La calificación debe estar entre 0.5 y 5"
+- `404` - "Actividad no encontrada"
+- `400` - "Ya has hecho una reseña para esta actividad"
+- `404` - "Reseña no encontrada o no tienes permisos para editarla"
+
 ## Próximos Sprints
 
 ### Sprint 4: Mapa Interactivo
 - Integración con Google Maps
 - Geolocalización de actividades
 - Búsqueda por proximidad
-
-### Sprint 5: Historial de Viajes
-- Sistema de reservas
+### Sprint 5: Sistema de Notificaciones
+- Notificaciones en tiempo real
+- Reportes de reseñas inapropiadas
+- Filtros avanzados en favoritos
+- Exportar favoritos
+- Compartir reseñas en redes sociales
 - Historial de actividades realizadas
-- Calificaciones y reseñas
 
 ### Sprint 6: Retoques Generales
 - Optimizaciones de rendimiento
 - Mejoras de seguridad
 - Documentación completa
-
-## Soporte
-
-Para reportar problemas o solicitar nuevas funcionalidades, contacta al equipo de desarrollo.

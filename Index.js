@@ -26,10 +26,10 @@ const startServer = async () => {
     console.log('Database connection established successfully.');
     await sequelize.sync({ force: false });
     console.log('Database synced successfully.');
-    app.listen(process.env.PORT || 3000, () => {
+  app.listen(process.env.PORT || 3000, () => {
       console.log('Server running on http://localhost:3000');
       console.log('Health check: http://localhost:3000/health');
-    });
+  });
   } catch (error) {
     console.error('Failed to start server:', error);
     process.exit(1);

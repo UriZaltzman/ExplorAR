@@ -1,4 +1,4 @@
-import { FavoritoActividad, FavoritoRestaurante, ActividadTuristica, Restaurante } from '../models/index.js';
+import { FavoritoActividad, FavoritoRestaurante, ActividadTuristica, Restaurante, Categoria, FotoActividad, FotoRestaurante } from '../models/index.js';
 
 // Agregar actividad a favoritos
 export const addActivityToFavorites = async (req, res) => {
@@ -65,33 +65,92 @@ export const removeActivityFromFavorites = async (req, res) => {
 export const getUserFavorites = async (req, res) => {
   try {
     const user_id = req.user.userId;
+    const { type, page = 1, limit = 10 } = req.query;
 
-    const [favoritosActividades, favoritosRestaurantes] = await Promise.all([
-      FavoritoActividad.findAll({
+    const offset = (page - 1) * limit;
+
+    let favoritosActividades = [];
+    let favoritosRestaurantes = [];
+
+    // Si no se especifica tipo o es 'activities', obtener actividades favoritas
+    if (!type || type === 'activities') {
+      favoritosActividades = await FavoritoActividad.findAndCountAll({
         where: { user_id },
         include: [
           {
             model: ActividadTuristica,
             as: 'actividad',
-            include: ['categoria', 'fotos']
+            include: [
+              {
+                model: Categoria,
+                as: 'categoria',
+                attributes: ['id', 'nombre', 'tipo']
+              },
+              {
+                model: FotoActividad,
+                as: 'fotos',
+                attributes: ['id', 'url', 'orden'],
+                order: [['orden', 'ASC']],
+                limit: 1
+              }
+            ]
           }
-        ]
-      }),
-      FavoritoRestaurante.findAll({
+        ],
+        order: [['created_at', 'DESC']],
+        limit: parseInt(limit),
+        offset: offset
+      });
+    }
+
+    // Si no se especifica tipo o es 'restaurants', obtener restaurantes favoritos
+    if (!type || type === 'restaurants') {
+      favoritosRestaurantes = await FavoritoRestaurante.findAndCountAll({
         where: { user_id },
         include: [
           {
             model: Restaurante,
             as: 'restaurante',
-            include: ['categoria', 'fotos']
+            include: [
+              {
+                model: Categoria,
+                as: 'categoria',
+                attributes: ['id', 'nombre', 'tipo']
+              },
+              {
+                model: FotoRestaurante,
+                as: 'fotos',
+                attributes: ['id', 'url', 'orden'],
+                order: [['orden', 'ASC']],
+                limit: 1
+              }
+            ]
           }
-        ]
-      })
-    ]);
+        ],
+        order: [['created_at', 'DESC']],
+        limit: parseInt(limit),
+        offset: offset
+      });
+    }
 
     res.json({
-      actividades: favoritosActividades.map(f => f.actividad),
-      restaurantes: favoritosRestaurantes.map(f => f.restaurante)
+      actividades: {
+        items: favoritosActividades.rows?.map(f => f.actividad) || [],
+        pagination: {
+          total: favoritosActividades.count || 0,
+          total_pages: Math.ceil((favoritosActividades.count || 0) / limit),
+          current_page: parseInt(page),
+          limit: parseInt(limit)
+        }
+      },
+      restaurantes: {
+        items: favoritosRestaurantes.rows?.map(f => f.restaurante) || [],
+        pagination: {
+          total: favoritosRestaurantes.count || 0,
+          total_pages: Math.ceil((favoritosRestaurantes.count || 0) / limit),
+          current_page: parseInt(page),
+          limit: parseInt(limit)
+        }
+      }
     });
   } catch (error) {
     console.error('Error getting user favorites:', error);
@@ -157,5 +216,51 @@ export const removeRestaurantFromFavorites = async (req, res) => {
   } catch (error) {
     console.error('Error removing restaurant from favorites:', error);
     res.status(500).json({ message: 'Error al remover de favoritos', error: error.message });
+  }
+};
+
+// Verificar si una actividad está en favoritos del usuario
+export const checkActivityFavorite = async (req, res) => {
+  try {
+    const { actividadturistica_id } = req.params;
+    const user_id = req.user.userId;
+
+    const favorite = await FavoritoActividad.findOne({
+      where: { user_id, actividadturistica_id }
+    });
+
+    res.json({
+      is_favorite: !!favorite,
+      favorite_id: favorite?.id || null
+    });
+  } catch (error) {
+    console.error('Error checking activity favorite:', error);
+    res.status(500).json({ 
+      message: 'Error al verificar favorito', 
+      error: error.message 
+    });
+  }
+};
+
+// Verificar si un restaurante está en favoritos del usuario
+export const checkRestaurantFavorite = async (req, res) => {
+  try {
+    const { restaurante_id } = req.params;
+    const user_id = req.user.userId;
+
+    const favorite = await FavoritoRestaurante.findOne({
+      where: { user_id, restaurante_id }
+    });
+
+    res.json({
+      is_favorite: !!favorite,
+      favorite_id: favorite?.id || null
+    });
+  } catch (error) {
+    console.error('Error checking restaurant favorite:', error);
+    res.status(500).json({ 
+      message: 'Error al verificar favorito', 
+      error: error.message 
+    });
   }
 }; 
