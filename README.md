@@ -25,10 +25,6 @@ npm install
 # Ejecutar en desarrollo
 npm run dev
 
-# Ejecutar en producción
-npm start
-```
-
 El servidor estará disponible en: `http://localhost:3000`
 
 ## Estado Actual
@@ -380,43 +376,6 @@ node test-db.js
 ### 3. Error de Permisos
 - Verificar que el usuario tenga el rol correcto (admin/user)
 - Verificar que el token no haya expirado
-
-## Estructura del Proyecto
-
-```
-ExplorAR/
-├── controllers/
-│   ├── auth.controller.js      # Autenticación y usuarios
-│   ├── activity.controller.js  # Gestión de actividades
-│   ├── favorite.controller.js  # Sistema de favoritos
-│   └── test.controller.js     # Endpoints de prueba
-├── models/
-│   ├── index.js               # Configuración de Sequelize
-│   ├── user.model.js          # Modelo de usuario
-│   ├── categoria.model.js     # Modelo de categorías
-│   ├── actividadturistica.model.js
-│   ├── restaurante.model.js
-│   ├── resena.model.js
-│   ├── favoritoactividad.model.js
-│   ├── favoritorestaurante.model.js
-│   ├── fotoactividad.model.js
-│   ├── fotorestaurante.model.js
-│   └── verificacionemail.model.js
-├── routes/
-│   ├── auth.routes.js         # Rutas de autenticación
-│   ├── activity.routes.js     # Rutas de actividades
-│   ├── favorite.routes.js     # Rutas de favoritos
-│   └── test.routes.js        # Rutas de prueba
-├── middlewares/
-│   └── auth.middleware.js     # Middleware de autenticación
-├── utils/
-│   └── sendVerificationCode.js # Envío de emails
-├── Index.js                   # Servidor principal
-├── Routes.js                  # Rutas principales
-└── package.json
-```
-
-## Validaciones y Reglas de Negocio
 
 ### Favoritos
 - Solo usuarios autenticados pueden usar favoritos
