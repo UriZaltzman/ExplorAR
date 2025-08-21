@@ -1,4 +1,4 @@
-import { Resena, ActividadTuristica, Restaurante, User } from '../models/index.js';
+import { Resena, ActividadTuristica, Restaurante, User, FotoActividad, FotoRestaurante } from '../models/index.js';
 
 // Crear reseña para actividad
 export const createActivityReview = async (req, res) => {
@@ -171,7 +171,7 @@ export const getActivityReviews = async (req, res) => {
           attributes: ['id', 'nombre', 'apellido']
         }
       ],
-      order: [['created_at', 'DESC']],
+      order: [['fecha', 'DESC']],
       limit: parseInt(limit),
       offset: offset
     });
@@ -244,7 +244,7 @@ export const getRestaurantReviews = async (req, res) => {
           attributes: ['id', 'nombre', 'apellido']
         }
       ],
-      order: [['created_at', 'DESC']],
+      order: [['fecha', 'DESC']],
       limit: parseInt(limit),
       offset: offset
     });
@@ -402,15 +402,33 @@ export const getUserReviews = async (req, res) => {
         {
           model: ActividadTuristica,
           as: 'actividad',
-          attributes: ['id', 'nombre', 'fotos']
+          attributes: ['id', 'nombre'],
+          include: [
+            {
+              model: FotoActividad,
+              as: 'fotos',
+              attributes: ['id', 'url', 'orden'],
+              order: [['orden', 'ASC']],
+              limit: 1
+            }
+          ]
         },
         {
           model: Restaurante,
           as: 'restaurante',
-          attributes: ['id', 'nombre', 'fotos']
+          attributes: ['id', 'nombre'],
+          include: [
+            {
+              model: FotoRestaurante,
+              as: 'fotos',
+              attributes: ['id', 'url', 'orden'],
+              order: [['orden', 'ASC']],
+              limit: 1
+            }
+          ]
         }
       ],
-      order: [['created_at', 'DESC']],
+      order: [['fecha', 'DESC']],
       limit: parseInt(limit),
       offset: offset
     });
