@@ -376,7 +376,7 @@ node test-db.js
 ### 3. Error de Permisos
 - Verificar que el usuario tenga el rol correcto (admin/user)
 - Verificar que el token no haya expirado
-
+  
 ### Favoritos
 - Solo usuarios autenticados pueden usar favoritos
 - Un usuario no puede agregar el mismo elemento dos veces
