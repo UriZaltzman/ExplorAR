@@ -23,6 +23,22 @@ export const requireAdmin = (req, res, next) => {
   next();
 };
 
+// Autenticación opcional: si hay token válido, setea req.user; si no, sigue sin error
+export const optionalAuth = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) {
+    return next();
+  }
+  const token = authHeader.split(' ')[1];
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = decoded;
+  } catch (err) {
+    // Ignorar token inválido para endpoints públicos
+  }
+  next();
+};
+
 const authMiddleware = (requireAdminFlag = false) => {
   return (req, res, next) => {
     const authHeader = req.headers.authorization;

@@ -1,10 +1,10 @@
 import express from 'express';
-import { getAllActivities, getActivityById } from '../controllers/activity.controller.js';
+import { getActivities, getActivityById } from '../controllers/activity.controller.js';
 
 const router = express.Router();
 
 // Listar actividades de forma clara
-router.get('/', getAllActivities);
+router.get('/', getActivities);
 router.get('/:id', getActivityById);
 
 export default router;
