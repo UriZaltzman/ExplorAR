@@ -13,6 +13,15 @@ app.use(express.json());
 
 app.use('/api', routes);
 
+// Root route to avoid 404 on project root
+app.get('/', (req, res) => {
+  res.json({
+    message: 'ExplorAR API',
+    docs: '/api',
+    health: '/health'
+  });
+});
+
 app.get('/health', (req, res) => {
   res.json({
     status: 'OK',
@@ -20,20 +29,17 @@ app.get('/health', (req, res) => {
   });
 });
 
-const startServer = async () => {
+// Initialize database on cold start (serverless friendly)
+(async () => {
   try {
     await sequelize.authenticate();
     console.log('Database connection established successfully.');
     await sequelize.sync({ force: false });
     console.log('Database synced successfully.');
-  app.listen(process.env.PORT || 3000, () => {
-      console.log('Server running on http://localhost:3000');
-      console.log('Health check: http://localhost:3000/health');
-  });
   } catch (error) {
-    console.error('Failed to start server:', error);
-    process.exit(1);
+    console.error('Database init error:', error);
   }
-};
+})();
 
-startServer();
+// Export the Express app for Vercel serverless
+export default app;
