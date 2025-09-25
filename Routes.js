@@ -9,13 +9,13 @@ import testRoutes from './routes/test.routes.js';
 
 const router = express.Router();
 
-// Rutas principales
-router.use('/activities', activityRoutes);
-router.use('/auth', authRoutes);
-router.use('/users', userRoutes);
-router.use('/restaurants', restaurantRoutes);
-router.use('/favorites', favoriteRoutes);
-router.use('/reviews', reviewRoutes);
-router.use('/test', testRoutes);
+// Rutas principales (en español)
+router.use('/actividades', activityRoutes);
+router.use('/autenticacion', authRoutes);
+router.use('/usuarios', userRoutes);
+router.use('/restaurantes', restaurantRoutes);
+router.use('/favoritos', favoriteRoutes);
+router.use('/resenas', reviewRoutes);
+router.use('/pruebas', testRoutes);
 
 export default router;
