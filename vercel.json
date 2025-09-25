@@ -2,10 +2,10 @@
   "version": 2,
  
   "routes": [
-    { "src": "/(.*)", "dest": "index.js" }
+    { "src": "/(.*)", "dest": "Index.js" }
   ],
   "functions": {
-    "index.js": {
+    "Index.js": {
       "memory": 512,
       "maxDuration": 10
     }
