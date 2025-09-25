@@ -4,12 +4,9 @@
   "routes": [
     { "src": "/(.*)", "dest": "Index.js" }
   ],
-  "functions": {
-    "Index.js": {
-      "memory": 512,
-      "maxDuration": 10
-    }
-  },
+  "builds": [
+    { "src": "Index.js", "use": "@vercel/node" }
+  ],
   "env": {
     "DATABASE_URL": "postgres://neondb_owner:npg_6BkrCtYiycQ3@ep-quiet-mode-a4xh9dp4-pooler.us-east-1.aws.neon.tech/neondb?sslmode=require",
     "DATABASE_URL_UNPOOLED": "postgresql://neondb_owner:npg_6BkrCtYiycQ3@ep-quiet-mode-a4xh9dp4.us-east-1.aws.neon.tech/neondb?sslmode=require",
