@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import routes from './Routes.js';
 import { sequelize } from './models/index.js';
+import pg from 'pg';
 import dotenv from 'dotenv';
 
 dotenv.config();
