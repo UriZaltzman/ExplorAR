@@ -2,27 +2,30 @@ import dotenv from 'dotenv';
 import { MailerSend, EmailParams, Sender, Recipient } from "mailersend";
 
 
-export const sendVerificationEmail = async (email, name, uuid) => {
+export const sendVerificationEmail = async (email, codigo, purpose = 'verify') => {
  dotenv.config()
- console.log("email", email, name);
  const mailersend = new MailerSend({
    apiKey: process.env.MAILERSEND_KEY,
 });
 
 
- const sentFrom = new Sender("test-86org8e56yzgew13.mlsender.net", "Mirrow verification code");
+ const sentFrom = new Sender("test-86org8e56yzgew13.mlsender.net", "ExplorAR");
 
 
 const recipients = [
- new Recipient(email, name)
+ new Recipient(email)
 ];
+
+
+const title = purpose === 'reset' ? 'Password Reset' : 'Email Verification';
+const subtitle = purpose === 'reset' ? 'Usa este código para resetear tu contraseña.' : 'Usa este código para verificar tu email.';
 
 
 const emailParams = new EmailParams()
  .setFrom(sentFrom)
  .setTo(recipients)
  .setReplyTo(sentFrom)
- .setSubject("This is a Subject")
+ .setSubject(title)
  .setHtml(`
    <!DOCTYPE html>
    <html>
@@ -91,18 +94,16 @@ const emailParams = new EmailParams()
    </head>
    <body>
      <div class="email-container">
-       <div class="email-header">
-         <h1>Email Verification</h1>
+      <div class="email-header">
+        <h1>${title}</h1>
        </div>
        <div class="email-body">
-         <p>Hello <strong>${name}</strong>,</p>
-         <p>Thank you for registering with us. Please click the button below to verify your email address:</p>
-      
-        <a href="https://pruebas-lac.vercel.app/verifyEmail.html?uuid=${uuid}">Click here to verify email </a>
-         <p>If you did not request this email, you can safely ignore it.</p>
+        <p>${subtitle}</p>
+        <p>Código:</p>
+        <div class="token">${codigo}</div>
        </div>
        <div class="email-footer">
-         <p>© 2024 Mirrow. All rights reserved.</p>
+        <p>© 2024 ExplorAR. All rights reserved.</p>
        </div>
      </div>
     
@@ -110,20 +111,15 @@ const emailParams = new EmailParams()
    </html>
    `)
   
- .setText("This is the text content");
+.setText(`${title}: ${codigo}`);
 
 
 try {
  let data = await mailersend.email.send(emailParams);
-return(data);
+ return(data);
 
 
 } catch (error) {
  return error;
 }
 }
-
-  // Example usage
-
-
-

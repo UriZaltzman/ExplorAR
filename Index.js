@@ -30,6 +30,14 @@ app.get('/health', (req, res) => {
   });
 });
 
+// Health bajo /api para clientes que lo esperan ahí
+app.get('/api/health', (req, res) => {
+  res.json({
+    status: 'OK',
+    timestamp: new Date().toISOString()
+  });
+});
+
 // Initialize database on cold start (serverless friendly)
 (async () => {
   try {
@@ -46,5 +54,7 @@ app.listen(process.env.PORT, () => {
   console.log(`Server is running on port ${process.env.PORT}`);
 });
 
-// Export the Express app for Vercel serverless
-export default app;
+// Export a Vercel-compatible handler
+export default function handler(req, res) {
+  return app(req, res);
+}
