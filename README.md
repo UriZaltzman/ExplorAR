@@ -55,13 +55,10 @@ Base URL: `http://localhost:3000/api`
 
 ### Usuarios (`/usuarios`)
 
-- GET `/usuarios`
   - Lista usuarios (paginado opcional: `?page=1&limit=20`).
 
-- GET `/usuarios/:id`
   - Obtiene un usuario por ID (sin token). Ej: `/usuarios/1`
 
-- POST `/usuarios/crear-admin`
   - Crea un usuario con rol administrador. Body igual a registro, con los mismos campos.
   - Body (JSON):
     ```json
@@ -74,19 +71,42 @@ Base URL: `http://localhost:3000/api`
     }
     ```
 
-- POST `/usuarios` (protegido, admin)
-- PUT `/usuarios/:id` (protegido, admin)
-- DELETE `/usuarios/:id` (protegido, admin)
+
+### Favoritos (`/favoritos`)
+
+- POST `/favoritos/activities` (agrega actividad a favoritos, requiere token)
+- DELETE `/favoritos/activities/:actividadturistica_id` (elimina actividad de favoritos, requiere token)
+- POST `/favoritos/restaurants` (agrega restaurante a favoritos, requiere token)
+- DELETE `/favoritos/restaurants/:restaurante_id` (elimina restaurante de favoritos, requiere token)
+- GET `/favoritos` (obtiene todos los favoritos del usuario, requiere token)
+- GET `/favoritos/check/activity/:actividadturistica_id` (verifica si una actividad está en favoritos, requiere token)
+- GET `/favoritos/check/restaurant/:restaurante_id` (verifica si un restaurante está en favoritos, requiere token)
 
 
 ### Actividades (`/actividades`)
 
-- GET `/actividades`
   - Lista todas las actividades. Filtros opcionales: `?name=baile&category=2`.
 
-- GET `/actividades/:id`
   - Obtiene una actividad por ID. Ej: `/actividades/1`
 
+### Restaurantes (`/restaurantes`)
+
+- GET `/restaurantes` (lista restaurantes, filtros: `?search=nombre&categoria=2&precio_min=1000&precio_max=5000&page=1&limit=10`)
+- GET `/restaurantes/categories` (lista categorías de restaurantes)
+- GET `/restaurantes/:id` (obtiene restaurante por ID)
+- POST `/restaurantes` (crear restaurante, solo admin)
+- PUT `/restaurantes/:id` (actualizar restaurante, solo admin y creador)
+- DELETE `/restaurantes/:id` (eliminar restaurante, solo admin y creador)
+
+### Reseñas (`/resenas`)
+
+- GET `/resenas/activities/:actividadturistica_id` (ver reseñas de actividad)
+- GET `/resenas/restaurants/:restaurante_id` (ver reseñas de restaurante)
+- POST `/resenas/activities` (crear reseña de actividad, requiere token)
+- POST `/resenas/restaurants` (crear reseña de restaurante, requiere token)
+- PUT `/resenas/:review_id` (actualizar reseña, requiere token)
+- DELETE `/resenas/:review_id` (eliminar reseña, requiere token)
+- GET `/resenas/user` (ver reseñas propias, requiere token)
 
 ## Código de verificación de email
 - Lógica para enviar códigos: `utils/sendVerificationCode.js`
@@ -113,6 +133,58 @@ npm run dev
 ```
 
 Servidor: `http://localhost:3000`
+
+## Rutas para probar en Postman
+
+Base URL: `http://localhost:3000/api`
+
+### Autenticación
+- POST `/autenticacion/registro`
+- POST `/autenticacion/login`
+- POST `/autenticacion/google-login`
+- POST `/autenticacion/verificar-email`
+- POST `/autenticacion/reenviar-codigo`
+- POST `/autenticacion/verificar-email-dev`
+- POST `/autenticacion/recuperar-password`
+- POST `/autenticacion/resetear-password`
+
+### Usuarios
+- GET `/usuarios`
+- GET `/usuarios/:id`
+- POST `/usuarios/crear-admin`
+- POST `/usuarios` (requiere token admin)
+- PUT `/usuarios/:id` (requiere token admin)
+- DELETE `/usuarios/:id` (requiere token admin)
+
+### Actividades
+- GET `/actividades`
+- GET `/actividades/:id`
+
+### Restaurantes
+- GET `/restaurantes`
+- GET `/restaurantes/categories`
+- GET `/restaurantes/:id`
+- POST `/restaurantes` (requiere token admin)
+- PUT `/restaurantes/:id` (requiere token admin)
+- DELETE `/restaurantes/:id` (requiere token admin)
+
+### Favoritos (requiere token)
+- POST `/favoritos/activities`
+- DELETE `/favoritos/activities/:actividadturistica_id`
+- POST `/favoritos/restaurants`
+- DELETE `/favoritos/restaurants/:restaurante_id`
+- GET `/favoritos`
+- GET `/favoritos/check/activity/:actividadturistica_id`
+- GET `/favoritos/check/restaurant/:restaurante_id`
+
+### Reseñas (requiere token para crear/editar/eliminar)
+- GET `/resenas/activities/:actividadturistica_id`
+- GET `/resenas/restaurants/:restaurante_id`
+- POST `/resenas/activities`
+- POST `/resenas/restaurants`
+- PUT `/resenas/:review_id`
+- DELETE `/resenas/:review_id`
+- GET `/resenas/user`
 
 ## Notas
 - Todas las rutas devuelven y aceptan JSON.
