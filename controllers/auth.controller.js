@@ -70,10 +70,14 @@ export const registerUser = async (req, res) => {
       // No fallar el registro si el email falla
     }
 
-    res.status(201).json({
+    const responseBody = {
       message: 'Usuario registrado exitosamente. Revisa tu email para verificar tu cuenta.',
       userId: newUser.id
-    });
+    };
+    if (process.env.NODE_ENV !== 'production') {
+      responseBody.verificationCode = verificationCode;
+    }
+    res.status(201).json(responseBody);
   } catch (error) {
     console.error('Error in registerUser:', error);
     res.status(500).json({ message: 'Error en el registro', error: error.message });
@@ -236,7 +240,11 @@ export const resendVerificationCode = async (req, res) => {
     // Enviar email
     try {
       await sendVerificationEmail(email, verificationCode);
-      res.json({ message: 'Código de verificación reenviado' });
+      const responseBody = { message: 'Código de verificación reenviado' };
+      if (process.env.NODE_ENV !== 'production') {
+        responseBody.verificationCode = verificationCode;
+      }
+      res.json(responseBody);
     } catch (emailError) {
       console.error('Error sending verification email:', emailError);
       res.status(500).json({ message: 'Error al enviar email de verificación' });
@@ -276,7 +284,11 @@ export const forgotPassword = async (req, res) => {
     // Enviar email de reset
     try {
       await sendVerificationEmail(email, resetCode, 'reset');
-      res.json({ message: 'Email de recuperación enviado' });
+      const responseBody = { message: 'Email de recuperación enviado' };
+      if (process.env.NODE_ENV !== 'production') {
+        responseBody.resetCode = resetCode;
+      }
+      res.json(responseBody);
     } catch (emailError) {
       console.error('Error sending reset email:', emailError);
       res.status(500).json({ message: 'Error al enviar email de recuperación' });
