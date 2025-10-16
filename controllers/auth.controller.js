@@ -48,36 +48,23 @@ export const registerUser = async (req, res) => {
       password: hashedPassword,
       dni,
       role: 'user',
-      is_email_verified: false
+      // Email verification disabled: mark as verified by default
+      // is_email_verified: false
+      is_email_verified: true
     });
+    
+    // Email verification disabled (commented out block)
+    // const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+    // const expirationDate = new Date();
+    // expirationDate.setHours(expirationDate.getHours() + 24); // 24 horas
+    // await VerificacionEmail.create({ user_id: newUser.id, codigo: verificationCode, fecha_expiracion: expirationDate });
+    // try { await sendVerificationEmail(email, verificationCode); } catch (emailError) { console.error('Error sending verification email:', emailError); }
 
-    // Generar código de verificación
-    const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
-    const expirationDate = new Date();
-    expirationDate.setHours(expirationDate.getHours() + 24); // 24 horas
-
-    await VerificacionEmail.create({
-      user_id: newUser.id,
-      codigo: verificationCode,
-      fecha_expiracion: expirationDate
-    });
-
-    // Enviar email de verificación
-    try {
-      await sendVerificationEmail(email, verificationCode);
-    } catch (emailError) {
-      console.error('Error sending verification email:', emailError);
-      // No fallar el registro si el email falla
-    }
-
-    const responseBody = {
-      message: 'Usuario registrado exitosamente. Revisa tu email para verificar tu cuenta.',
+    // Responder sin requerir verificación
+    res.status(201).json({
+      message: 'Usuario registrado exitosamente. Ya puedes iniciar sesión.',
       userId: newUser.id
-    };
-    if (process.env.NODE_ENV !== 'production') {
-      responseBody.verificationCode = verificationCode;
-    }
-    res.status(201).json(responseBody);
+    });
   } catch (error) {
     console.error('Error in registerUser:', error);
     res.status(500).json({ message: 'Error en el registro', error: error.message });
@@ -105,14 +92,14 @@ export const loginUser = async (req, res) => {
       return res.status(401).json({ message: 'Credenciales inválidas' });
     }
 
-    // Verificar si el email está verificado
-    if (!user.is_email_verified) {
-      return res.status(401).json({ 
-        message: 'Debes verificar tu email antes de iniciar sesión',
-        needsVerification: true,
-        userId: user.id
-      });
-    }
+    // Email verification disabled (allow login without verifying email)
+    // if (!user.is_email_verified) {
+    //   return res.status(401).json({ 
+    //     message: 'Debes verificar tu email antes de iniciar sesión',
+    //     needsVerification: true,
+    //     userId: user.id
+    //   });
+    // }
 
     // Generar token JWT
     const token = jwt.sign(
@@ -145,38 +132,10 @@ export const loginUser = async (req, res) => {
 // Verificar email
 export const verifyEmail = async (req, res) => {
   try {
-    const { userId, codigo } = req.body;
-
-    if (!userId || !codigo) {
-      return res.status(400).json({ message: 'Usuario y código son obligatorios' });
-    }
-
-    // Buscar verificación
-    const verification = await VerificacionEmail.findOne({
-      where: {
-        user_id: userId,
-        codigo,
-        usado: false,
-        fecha_expiracion: {
-          [Op.gt]: new Date()
-        }
-      }
-    });
-
-    if (!verification) {
-      return res.status(400).json({ message: 'Código inválido o expirado' });
-    }
-
-    // Marcar como usado
-    await verification.update({ usado: true });
-
-    // Verificar email del usuario
-    const user = await User.findByPk(userId);
-    if (user) {
-      await user.update({ is_email_verified: true });
-    }
-
-    res.json({ message: 'Email verificado exitosamente' });
+    // Email verification disabled (endpoint no-op)
+    // Original logic commented out. This endpoint is kept for compatibility
+    // and now returns success without processing a code.
+    return res.json({ message: 'Verificación de email deshabilitada temporalmente' });
   } catch (error) {
     console.error('Error in verifyEmail:', error);
     res.status(500).json({ message: 'Error al verificar email', error: error.message });
@@ -186,21 +145,8 @@ export const verifyEmail = async (req, res) => {
 // Verificar email sin código (solo para desarrollo)
 export const verifyEmailDev = async (req, res) => {
   try {
-    const { email } = req.body;
-
-    if (!email) {
-      return res.status(400).json({ message: 'Email es obligatorio' });
-    }
-
-    const user = await User.findOne({ where: { email } });
-    if (!user) {
-      return res.status(404).json({ message: 'Usuario no encontrado' });
-    }
-
-    // Verificar email directamente
-    await user.update({ is_email_verified: true });
-
-    res.json({ message: 'Email verificado exitosamente (modo desarrollo)' });
+    // Email verification disabled (endpoint no-op)
+    return res.json({ message: 'Verificación deshabilitada (modo desarrollo)' });
   } catch (error) {
     console.error('Error in verifyEmailDev:', error);
     res.status(500).json({ message: 'Error al verificar email', error: error.message });
@@ -210,45 +156,8 @@ export const verifyEmailDev = async (req, res) => {
 // Reenviar código de verificación
 export const resendVerificationCode = async (req, res) => {
   try {
-  const { email } = req.body;
-
-    if (!email) {
-      return res.status(400).json({ message: 'Email es obligatorio' });
-    }
-
-    const user = await User.findOne({ where: { email } });
-    if (!user) {
-      return res.status(404).json({ message: 'Usuario no encontrado' });
-    }
-
-    if (user.is_email_verified) {
-      return res.status(400).json({ message: 'El email ya está verificado' });
-    }
-
-    // Generar nuevo código
-    const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
-    const expirationDate = new Date();
-    expirationDate.setHours(expirationDate.getHours() + 24);
-
-    // Crear nueva verificación
-    await VerificacionEmail.create({
-      user_id: user.id,
-      codigo: verificationCode,
-      fecha_expiracion: expirationDate
-    });
-
-    // Enviar email
-    try {
-      await sendVerificationEmail(email, verificationCode);
-      const responseBody = { message: 'Código de verificación reenviado' };
-      if (process.env.NODE_ENV !== 'production') {
-        responseBody.verificationCode = verificationCode;
-      }
-      res.json(responseBody);
-    } catch (emailError) {
-      console.error('Error sending verification email:', emailError);
-      res.status(500).json({ message: 'Error al enviar email de verificación' });
-    }
+    // Email verification disabled (endpoint no-op)
+    return res.json({ message: 'Reenvío de verificación deshabilitado' });
   } catch (error) {
     console.error('Error in resendVerificationCode:', error);
     res.status(500).json({ message: 'Error al reenviar código', error: error.message });
