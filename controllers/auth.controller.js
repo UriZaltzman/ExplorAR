@@ -2,7 +2,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { OAuth2Client } from 'google-auth-library';
 import { User, VerificacionEmail } from '../models/index.js';
-import { sendVerificationEmail } from '../utils/sendVerificationCode.js';
+// import { sendVerificationEmail } from '../utils/sendVerificationCode.js'; // Email sending disabled
 import { Op } from 'sequelize';
 
 // Registro de usuario
