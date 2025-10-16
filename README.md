@@ -9,7 +9,7 @@ Base URL: `http://localhost:3000/api`
 ### Autenticación (`/autenticacion`)
 
 - POST `/autenticacion/registro`
-  - Registra un nuevo usuario.
+  - Registra un nuevo usuario. Ahora el usuario queda verificado automáticamente (no se requiere código de verificación).
   - Body (JSON):
     ```json
     {
@@ -22,7 +22,7 @@ Base URL: `http://localhost:3000/api`
     ```
 
 - POST `/autenticacion/login`
-  - Inicia sesión con email y password.
+  - Inicia sesión con email y password. No exige verificación previa de email.
   - Body (JSON):
     ```json
     { "email": "juan@gmail.com", "password": "password123" }
@@ -32,24 +32,21 @@ Base URL: `http://localhost:3000/api`
   - Login con Google (requiere `GOOGLE_CLIENT_ID`).
   - Body (JSON): `{ "idToken": "token_de_google" }`
 
-- POST `/autenticacion/verificar-email`
-  - Verifica email con código.
-  - Body (JSON): `{ "userId": 1, "codigo": "123456" }`
+- POST `/autenticacion/verificar-email` (deshabilitado)
+  - Endpoint temporalmente deshabilitado. No es necesario verificar email.
 
-- POST `/autenticacion/reenviar-codigo`
-  - Reenvía código de verificación.
-  - Body (JSON): `{ "email": "juan@gmail.com" }`
+- POST `/autenticacion/reenviar-codigo` (deshabilitado)
+  - Endpoint temporalmente deshabilitado. No se envían códigos.
 
-- POST `/autenticacion/verificar-email-dev`
-  - Marca email como verificado (solo desarrollo).
-  - Body (JSON): `{ "email": "juan@gmail.com" }`
+- POST `/autenticacion/verificar-email-dev` (deshabilitado)
+  - Endpoint temporalmente deshabilitado.
 
-- POST `/autenticacion/recuperar-password`
-  - Envía código para resetear contraseña.
+- POST `/autenticacion/recuperar-password` (envío de email deshabilitado temporalmente)
+  - El envío de correo está deshabilitado mientras no se use MailerSend.
   - Body (JSON): `{ "email": "juan@gmail.com" }`
 
 - POST `/autenticacion/resetear-password`
-  - Resetea contraseña usando código.
+  - Resetea contraseña usando código (si el flujo de recuperación está activo).
   - Body (JSON): `{ "email": "juan@gmail.com", "codigo": "123456", "newPassword": "Nueva123" }`
 
 
@@ -109,8 +106,9 @@ Base URL: `http://localhost:3000/api`
 - GET `/resenas/user` (ver reseñas propias, requiere token)
 
 ## Código de verificación de email
-- Lógica para enviar códigos: `utils/sendVerificationCode.js`
-- Endpoints relacionados: `/autenticacion/verificar-email`, `/autenticacion/reenviar-codigo`, `/autenticacion/verificar-email-dev`
+- Estado: deshabilitado temporalmente. Registro y login no requieren verificación.
+- Lógica de envío: `utils/sendVerificationCode.js` (stub, no envía correos).
+- Endpoints relacionados (deshabilitados): `/autenticacion/verificar-email`, `/autenticacion/reenviar-codigo`, `/autenticacion/verificar-email-dev`
 
 
 ## Variables de entorno (.env)
@@ -122,7 +120,7 @@ DB_PASSWORD=postgres
 DB_NAME=explorar
 PORT=3000
 JWT_SECRET=un_secreto_seguro
-MAILERSEND_KEY=tu_api_key_de_mailersend
+// MAILERSEND_KEY=tu_api_key_de_mailersend (no requerido mientras el envío de mails esté deshabilitado)
 GOOGLE_CLIENT_ID=tu_google_client_id
 ```
 
