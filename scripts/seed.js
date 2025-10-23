@@ -42,7 +42,6 @@ const ensureActivity = async (admin, categoria) => {
       coordenadas_lat: -34.6037,
       coordenadas_lng: -58.3816,
       precio: 2500.0,
-      seña: 500.0,
       categoria_id: categoria.id,
       user_id: admin.id,
       max_capacity: 10,

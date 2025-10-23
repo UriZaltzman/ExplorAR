@@ -23,19 +23,19 @@ const RestauranteModel = (sequelize) => {
       type: DataTypes.STRING(100),
       allowNull: false,
     },
-    coordenadas_lat: {
-      type: DataTypes.DECIMAL(10, 8),
-      allowNull: true,
-    },
-    coordenadas_lng: {
-      type: DataTypes.DECIMAL(11, 8),
+    // coordenadas_lat: {
+    //   type: DataTypes.DECIMAL(10, 8),
+    //   allowNull: true,
+    // },
+    // coordenadas_lng: {
+    //   type: DataTypes.DECIMAL(11, 8),
+    //   allowNull: true,
+    // },
+    google_maps_link: {
+      type: DataTypes.TEXT,
       allowNull: true,
     },
     precio: {
-      type: DataTypes.DECIMAL(10, 2),
-      allowNull: false,
-    },
-    seña: {
       type: DataTypes.DECIMAL(10, 2),
       allowNull: false,
     },
