@@ -2,7 +2,7 @@
 
 API RESTful para gestión de actividades, usuarios y autenticación.
 
-Base URL: `http://localhost:3000/api`
+Base URL: `https://explor-ar-urizaltzmans-projects.vercel.app/api`
 
 ## Rutas en español
 
@@ -125,16 +125,25 @@ GOOGLE_CLIENT_ID=tu_google_client_id
 ```
 
 ## Ejecutar
+
+### Desarrollo Local
 ```
 npm install
 npm run dev
 ```
 
-Servidor: `http://localhost:3000`
+### Producción (Vercel)
+La API está desplegada en Vercel y disponible en:
+- **URL Base:** `https://explor-ar-urizaltzmans-projects.vercel.app`
+- **API Endpoint:** `https://explor-ar-urizaltzmans-projects.vercel.app/api`
+- **Health Check:** `https://explor-ar-urizaltzmans-projects.vercel.app/health`
+
+### Despliegue
+El proyecto se despliega automáticamente en Vercel cuando se hace push a la rama main del repositorio.
 
 ## Rutas para probar en Postman
 
-Base URL: `http://localhost:3000/api`
+Base URL: `https://explor-ar-urizaltzmans-projects.vercel.app/api`
 
 ### Autenticación
 - POST `/autenticacion/registro`
