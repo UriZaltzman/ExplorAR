@@ -6,6 +6,7 @@ import restaurantRoutes from './routes/restaurant.routes.js';
 import favoriteRoutes from './routes/favorite.routes.js';
 import reviewRoutes from './routes/review.routes.js';
 import testRoutes from './routes/test.routes.js';
+import uploadRoutes from './routes/upload.routes.js';
 
 const router = express.Router();
 
@@ -17,5 +18,6 @@ router.use('/restaurantes', restaurantRoutes);
 router.use('/favoritos', favoriteRoutes);
 router.use('/resenas', reviewRoutes);
 router.use('/pruebas', testRoutes);
+router.use('/upload', uploadRoutes);
 
 export default router;
